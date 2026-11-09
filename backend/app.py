@@ -1,3 +1,4 @@
+
 from flask import Flask, request, jsonify, send_from_directory
 from pathlib import Path
 from datetime import date, datetime, time
@@ -25,16 +26,12 @@ def make_json_safe(row):
     result = dict(row)
 
     for key, value in result.items():
-
         if isinstance(value, datetime):
             result[key] = value.isoformat()
-
         elif isinstance(value, date):
             result[key] = value.isoformat()
-
         elif isinstance(value, time):
             result[key] = value.strftime("%H:%M")
-
         elif isinstance(value, Decimal):
             result[key] = float(value)
 
@@ -50,7 +47,6 @@ def home():
 # DASHBOARD
 @app.route("/api/dashboard")
 def dashboard():
-
     conn = get_db_connection()
 
     if conn is None:
@@ -58,7 +54,6 @@ def dashboard():
 
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-
             cur.execute("""
                 SELECT
                     (SELECT COUNT(*) FROM patients) AS total_patients,
@@ -69,7 +64,6 @@ def dashboard():
             """)
 
             result = cur.fetchone()
-
             return jsonify(make_json_safe(result))
 
     finally:
@@ -79,7 +73,6 @@ def dashboard():
 # GET ALL PATIENTS
 @app.route("/api/patients")
 def get_patients():
-
     conn = get_db_connection()
 
     if conn is None:
@@ -87,7 +80,6 @@ def get_patients():
 
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-
             cur.execute("""
                 SELECT *
                 FROM patients
@@ -95,7 +87,6 @@ def get_patients():
             """)
 
             patients = cur.fetchall()
-
             return jsonify([make_json_safe(p) for p in patients])
 
     finally:
@@ -105,7 +96,6 @@ def get_patients():
 # ADD NEW PATIENT
 @app.route("/api/patients", methods=["POST"])
 def add_patient():
-
     data = request.get_json(silent=True) or {}
 
     name = data.get("name")
@@ -123,7 +113,6 @@ def add_patient():
 
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-
             cur.execute("""
                 INSERT INTO patients (name, phone, age, gender)
                 VALUES (%s, %s, %s, %s)
@@ -133,7 +122,6 @@ def add_patient():
             patient = make_json_safe(cur.fetchone())
 
         conn.commit()
-
         return jsonify(patient), 201
 
     except Exception as error:
@@ -147,7 +135,6 @@ def add_patient():
 # GET ALL DOCTORS
 @app.route("/api/doctors")
 def get_doctors():
-
     conn = get_db_connection()
 
     if conn is None:
@@ -155,7 +142,6 @@ def get_doctors():
 
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-
             cur.execute("""
                 SELECT *
                 FROM doctors
@@ -163,7 +149,6 @@ def get_doctors():
             """)
 
             doctors = cur.fetchall()
-
             return jsonify([make_json_safe(d) for d in doctors])
 
     finally:
@@ -173,7 +158,6 @@ def get_doctors():
 # GET TODAY'S DOCTOR QUEUE
 @app.route("/api/queue")
 def get_queue():
-
     conn = get_db_connection()
 
     if conn is None:
@@ -181,16 +165,14 @@ def get_queue():
 
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-
             cur.execute("""
                 SELECT *
                 FROM live_doctor_queue_view
                 WHERE appointment_date = CURRENT_DATE
-                ORDER BY doctor_id, token_number
+                ORDER BY doctor_name, token_number
             """)
 
             queue = cur.fetchall()
-
             return jsonify([make_json_safe(q) for q in queue])
 
     finally:
@@ -200,7 +182,6 @@ def get_queue():
 # BOOK APPOINTMENT
 @app.route("/api/appointments", methods=["POST"])
 def book_appointment():
-
     data = request.get_json(silent=True) or {}
 
     patient_id = data.get("patient_id")
@@ -225,7 +206,6 @@ def book_appointment():
 
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-
             cur.execute("""
                 INSERT INTO appointments
                 (
@@ -247,7 +227,6 @@ def book_appointment():
             appointment = make_json_safe(cur.fetchone())
 
         conn.commit()
-
         return jsonify(appointment), 201
 
     except Exception as error:
@@ -261,7 +240,6 @@ def book_appointment():
 # UPDATE APPOINTMENT STATUS
 @app.route("/api/appointments/<int:appointment_id>/status", methods=["PATCH"])
 def update_status(appointment_id):
-
     data = request.get_json(silent=True) or {}
 
     status = data.get("status")
@@ -283,7 +261,6 @@ def update_status(appointment_id):
 
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-
             cur.execute("""
                 UPDATE appointments
                 SET status = %s
@@ -298,7 +275,6 @@ def update_status(appointment_id):
             return jsonify({"error": "Appointment not found"}), 404
 
         conn.commit()
-
         return jsonify(make_json_safe(appointment))
 
     except Exception as error:
@@ -307,10 +283,11 @@ def update_status(appointment_id):
 
     finally:
         conn.close()
+
+
 # GET APPOINTMENTS AVAILABLE FOR CONSULTATION
 @app.route("/api/consultation-appointments")
 def get_consultation_appointments():
-
     conn = get_db_connection()
 
     if conn is None:
@@ -318,7 +295,6 @@ def get_consultation_appointments():
 
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-
             cur.execute("""
                 SELECT
                     a.appointment_id,
@@ -346,10 +322,11 @@ def get_consultation_appointments():
 
     finally:
         conn.close()
+
+
 # ADD CONSULTATION
 @app.route("/api/consultations", methods=["POST"])
 def add_consultation():
-
     data = request.get_json(silent=True) or {}
 
     appointment_id = data.get("appointment_id")
@@ -370,7 +347,6 @@ def add_consultation():
 
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-
             cur.execute("""
                 INSERT INTO consultations
                 (appointment_id, diagnosis, prescription)
@@ -381,7 +357,6 @@ def add_consultation():
             consultation = make_json_safe(cur.fetchone())
 
         conn.commit()
-
         return jsonify(consultation), 201
 
     except Exception as error:
@@ -395,7 +370,6 @@ def add_consultation():
 # VIEW CONSULTATIONS
 @app.route("/api/consultations")
 def get_consultations():
-
     conn = get_db_connection()
 
     if conn is None:
@@ -405,7 +379,6 @@ def get_consultations():
 
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-
             cur.execute("""
                 SELECT
                     c.consultation_id,
@@ -433,6 +406,8 @@ def get_consultations():
 
     finally:
         conn.close()
+
+
 # RUN FLASK SERVER
 if __name__ == "__main__":
     app.run(debug=True)

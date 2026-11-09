@@ -17,6 +17,6 @@ BEGIN;
 
 UPDATE appointments
 SET status = 'Cancelled'
-WHERE appointment_id = 2;
+WHERE appointment_id = 1;
 
 ROLLBACK;
