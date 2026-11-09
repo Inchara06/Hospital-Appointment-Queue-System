@@ -1,21 +1,23 @@
 
 const API = "/api";
 
-
 // ==========================================
 // SET TODAY'S DATE
 // ==========================================
 
-document.getElementById("today-date").textContent =
-    new Date().toLocaleDateString("en-IN", {
+const todayDate = document.getElementById("today-date");
+
+if (todayDate) {
+    todayDate.textContent = new Date().toLocaleDateString("en-IN", {
         day: "numeric",
         month: "long",
         year: "numeric"
     });
+}
 
 
 // ==========================================
-// LOAD DASHBOARD
+// DASHBOARD
 // ==========================================
 
 async function loadDashboard() {
@@ -41,8 +43,7 @@ async function loadDashboard() {
             data.waiting_appointments;
 
     } catch (error) {
-        console.error(error);
-        alert("Could not load dashboard details.");
+        console.error("Dashboard error:", error);
     }
 }
 
@@ -56,30 +57,29 @@ async function loadPatients() {
         const response = await fetch(`${API}/patients`);
 
         if (!response.ok) {
-            throw new Error("Patient loading failed");
+            throw new Error("Unable to load patients");
         }
 
         const patients = await response.json();
 
-        const select = document.getElementById("appointment-patient");
+        const patientDropdown =
+            document.getElementById("appointment-patient");
 
-        select.innerHTML =
-            '<option value="">Select patient</option>';
+        if (patientDropdown) {
+            patientDropdown.innerHTML =
+                '<option value="">Select Patient</option>';
 
-        patients.forEach(patient => {
-            const option = document.createElement("option");
-
-            option.value = patient.patient_id;
-
-            option.textContent =
-                `${patient.name} (${patient.phone})`;
-
-            select.appendChild(option);
-        });
+            patients.forEach(patient => {
+                patientDropdown.innerHTML += `
+                    <option value="${patient.patient_id}">
+                        ${patient.name}
+                    </option>
+                `;
+            });
+        }
 
     } catch (error) {
-        console.error(error);
-        alert("Could not load patients.");
+        console.error("Patient loading error:", error);
     }
 }
 
@@ -93,30 +93,29 @@ async function loadDoctors() {
         const response = await fetch(`${API}/doctors`);
 
         if (!response.ok) {
-            throw new Error("Doctor loading failed");
+            throw new Error("Unable to load doctors");
         }
 
         const doctors = await response.json();
 
-        const select = document.getElementById("appointment-doctor");
+        const doctorDropdown =
+            document.getElementById("appointment-doctor");
 
-        select.innerHTML =
-            '<option value="">Select doctor</option>';
+        if (doctorDropdown) {
+            doctorDropdown.innerHTML =
+                '<option value="">Select Doctor</option>';
 
-        doctors.forEach(doctor => {
-            const option = document.createElement("option");
-
-            option.value = doctor.doctor_id;
-
-            option.textContent =
-                `${doctor.name} - ${doctor.department}`;
-
-            select.appendChild(option);
-        });
+            doctors.forEach(doctor => {
+                doctorDropdown.innerHTML += `
+                    <option value="${doctor.doctor_id}">
+                        ${doctor.name} - ${doctor.department}
+                    </option>
+                `;
+            });
+        }
 
     } catch (error) {
-        console.error(error);
-        alert("Could not load doctors.");
+        console.error("Doctor loading error:", error);
     }
 }
 
@@ -125,41 +124,37 @@ async function loadDoctors() {
 // REGISTER PATIENT
 // ==========================================
 
-document.getElementById("patient-form")
-    .addEventListener("submit", async function(event) {
+const patientForm = document.getElementById("patient-form");
 
+if (patientForm) {
+    patientForm.addEventListener("submit", async function (event) {
         event.preventDefault();
 
         const patient = {
             name: document.getElementById("patient-name").value.trim(),
-
             phone: document.getElementById("patient-phone").value.trim(),
-
-            age: document.getElementById("patient-age").value || null,
-
-            gender: document.getElementById("patient-gender").value || null
+            age: document.getElementById("patient-age").value,
+            gender: document.getElementById("patient-gender").value
         };
 
         try {
             const response = await fetch(`${API}/patients`, {
                 method: "POST",
-
                 headers: {
                     "Content-Type": "application/json"
                 },
-
                 body: JSON.stringify(patient)
             });
 
             const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(result.error || "Registration failed");
+                throw new Error(result.error || "Patient registration failed");
             }
 
             alert("Patient registered successfully!");
 
-            this.reset();
+            patientForm.reset();
 
             await loadPatients();
             await loadDashboard();
@@ -168,48 +163,45 @@ document.getElementById("patient-form")
             alert(error.message);
         }
     });
+}
 
 
 // ==========================================
 // BOOK APPOINTMENT
 // ==========================================
 
-document.getElementById("appointment-form")
-    .addEventListener("submit", async function(event) {
+const appointmentForm = document.getElementById("appointment-form");
 
+if (appointmentForm) {
+    appointmentForm.addEventListener("submit", async function (event) {
         event.preventDefault();
 
         const appointment = {
             patient_id: document.getElementById("appointment-patient").value,
-
             doctor_id: document.getElementById("appointment-doctor").value,
-
             appointment_date: document.getElementById("appointment-date").value,
-
             appointment_time: document.getElementById("appointment-time").value
         };
 
         try {
             const response = await fetch(`${API}/appointments`, {
                 method: "POST",
-
                 headers: {
                     "Content-Type": "application/json"
                 },
-
                 body: JSON.stringify(appointment)
             });
 
             const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(result.error || "Booking failed");
+                throw new Error(result.error || "Appointment booking failed");
             }
 
             document.getElementById("booking-result").textContent =
                 `Appointment booked successfully! Your token number is ${result.token_number}.`;
 
-            this.reset();
+            appointmentForm.reset();
 
             await loadDashboard();
             await loadQueue();
@@ -219,6 +211,7 @@ document.getElementById("appointment-form")
                 error.message;
         }
     });
+}
 
 
 // ==========================================
@@ -235,85 +228,57 @@ async function loadQueue() {
 
         const appointments = await response.json();
 
-        const tbody = document.getElementById("queue-body");
+        const queueBody = document.getElementById("queue-body");
 
-        tbody.innerHTML = "";
+        if (!queueBody) return;
+
+        queueBody.innerHTML = "";
 
         if (appointments.length === 0) {
-            tbody.innerHTML =
-                '<tr><td colspan="7">No appointments for today.</td></tr>';
-
+            queueBody.innerHTML = `
+                <tr>
+                    <td colspan="7">No appointments in today's queue.</td>
+                </tr>
+            `;
             return;
         }
 
         appointments.forEach(appointment => {
-
-            const row = document.createElement("tr");
-
-            const values = [
-                appointment.token_number,
-                appointment.patient_name,
-                appointment.doctor_name,
-                appointment.department,
-                appointment.appointment_time,
-                appointment.status
-            ];
-
-            values.forEach(value => {
-                const cell = document.createElement("td");
-
-                cell.textContent = value;
-
-                row.appendChild(cell);
-            });
-
-            const actionCell = document.createElement("td");
+            let actionButtons = "";
 
             if (appointment.status === "Waiting") {
+                actionButtons = `
+                    <button onclick="updateAppointmentStatus(
+                        ${appointment.appointment_id}, 'In Progress'
+                    )">Start</button>
 
-                const button = document.createElement("button");
-
-                button.textContent = "Call Patient";
-
-                button.addEventListener("click", () =>
-                    updateAppointmentStatus(
-                        appointment.appointment_id,
-                        "In Progress"
-                    )
-                );
-
-                actionCell.appendChild(button);
-
+                    <button onclick="updateAppointmentStatus(
+                        ${appointment.appointment_id}, 'Cancelled'
+                    )">Cancel</button>
+                `;
             } else if (appointment.status === "In Progress") {
-
-                const button = document.createElement("button");
-
-                button.textContent = "Complete";
-
-                button.addEventListener("click", () =>
-                    updateAppointmentStatus(
-                        appointment.appointment_id,
-                        "Completed"
-                    )
-                );
-
-                actionCell.appendChild(button);
-
-            } else {
-
-                actionCell.textContent = "-";
+                actionButtons = `
+                    <button onclick="updateAppointmentStatus(
+                        ${appointment.appointment_id}, 'Completed'
+                    )">Complete</button>
+                `;
             }
 
-            row.appendChild(actionCell);
-
-            tbody.appendChild(row);
+            queueBody.innerHTML += `
+                <tr>
+                    <td>${appointment.token_number}</td>
+                    <td>${appointment.patient_name}</td>
+                    <td>${appointment.doctor_name}</td>
+                    <td>${appointment.department}</td>
+                    <td>${appointment.appointment_time}</td>
+                    <td>${appointment.status}</td>
+                    <td>${actionButtons}</td>
+                </tr>
+            `;
         });
 
     } catch (error) {
-        console.error(error);
-
-        document.getElementById("queue-body").innerHTML =
-            '<tr><td colspan="7">Unable to load queue.</td></tr>';
+        console.error("Queue loading error:", error);
     }
 }
 
@@ -323,18 +288,15 @@ async function loadQueue() {
 // ==========================================
 
 async function updateAppointmentStatus(appointmentId, status) {
-
     try {
         const response = await fetch(
             `${API}/appointments/${appointmentId}/status`,
             {
                 method: "PATCH",
-
                 headers: {
                     "Content-Type": "application/json"
                 },
-
-                body: JSON.stringify({ status })
+                body: JSON.stringify({ status: status })
             }
         );
 
@@ -355,214 +317,214 @@ async function updateAppointmentStatus(appointmentId, status) {
 
 
 // ==========================================
-// CONSULTATION MANAGEMENT
+// LOAD APPOINTMENTS FOR CONSULTATIONS
 // ==========================================
 
-
-// LOAD APPOINTMENTS AVAILABLE FOR CONSULTATION
-
 async function loadConsultationAppointments() {
-
     try {
-        const response = await fetch(
-            `${API}/consultation-appointments`
-        );
+        const response =
+            await fetch(`${API}/consultation-appointments`);
 
         if (!response.ok) {
-            throw new Error("Could not load consultation appointments");
+            throw new Error("Unable to load consultation appointments");
         }
 
         const appointments = await response.json();
 
-        const select = document.getElementById(
-            "consultation-appointment"
-        );
+        const dropdown =
+            document.getElementById("consultation-appointment");
 
-        select.innerHTML =
+        if (!dropdown) return;
+
+        dropdown.innerHTML =
             '<option value="">Select Appointment</option>';
 
         appointments.forEach(appointment => {
-
-            const option = document.createElement("option");
-
-            option.value = appointment.appointment_id;
-
-            option.textContent =
-                `Appointment ${appointment.appointment_id} - ` +
-                `${appointment.patient_name} - ` +
-                `${appointment.doctor_name} - ` +
-                `Token ${appointment.token_number}`;
-
-            select.appendChild(option);
+            dropdown.innerHTML += `
+                <option value="${appointment.appointment_id}">
+                    Token ${appointment.token_number} -
+                    ${appointment.patient_name} -
+                    ${appointment.doctor_name}
+                </option>
+            `;
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("Consultation appointments error:", error);
     }
 }
 
 
-// LOAD SAVED CONSULTATION RECORDS
+// ==========================================
+// SAVE CONSULTATION
+// ==========================================
+
+const consultationForm =
+    document.getElementById("consultation-form");
+
+if (consultationForm) {
+    consultationForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const consultation = {
+            appointment_id:
+                document.getElementById("consultation-appointment").value,
+
+            diagnosis:
+                document.getElementById("consultation-diagnosis").value.trim(),
+
+            prescription:
+                document.getElementById("consultation-prescription").value.trim()
+        };
+
+        try {
+            const response = await fetch(`${API}/consultations`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(consultation)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Consultation saving failed");
+            }
+
+            document.getElementById("consultation-result").textContent =
+                "Consultation saved successfully!";
+
+            consultationForm.reset();
+
+            await loadConsultations();
+            await loadConsultationAppointments();
+
+        } catch (error) {
+            document.getElementById("consultation-result").textContent =
+                error.message;
+        }
+    });
+}
+
+
+// ==========================================
+// LOAD SAVED CONSULTATIONS
+// ==========================================
 
 async function loadConsultations() {
-
     try {
         const response = await fetch(`${API}/consultations`);
 
         if (!response.ok) {
-            throw new Error("Could not load consultation records");
+            throw new Error("Unable to load consultations");
         }
 
         const consultations = await response.json();
 
-        const tbody = document.getElementById("consultation-body");
+        const consultationBody =
+            document.getElementById("consultation-body");
 
-        tbody.innerHTML = "";
+        if (!consultationBody) return;
+
+        consultationBody.innerHTML = "";
 
         if (consultations.length === 0) {
-
-            tbody.innerHTML = `
+            consultationBody.innerHTML = `
                 <tr>
-                    <td colspan="5">
-                        No consultation records yet.
-                    </td>
+                    <td colspan="5">No consultations recorded yet.</td>
                 </tr>
             `;
-
             return;
         }
 
         consultations.forEach(consultation => {
-
-            const row = document.createElement("tr");
-
-            const values = [
-                consultation.patient_name,
-                consultation.doctor_name,
-                consultation.diagnosis,
-                consultation.prescription || "-",
-                consultation.created_at
-                    ? new Date(
-                        consultation.created_at
-                    ).toLocaleDateString("en-IN")
-                    : "-"
-            ];
-
-            values.forEach(value => {
-
-                const cell = document.createElement("td");
-
-                cell.textContent = value;
-
-                row.appendChild(cell);
-            });
-
-            tbody.appendChild(row);
+            consultationBody.innerHTML += `
+                <tr>
+                    <td>${consultation.consultation_id}</td>
+                    <td>${consultation.patient_name}</td>
+                    <td>${consultation.doctor_name}</td>
+                    <td>${consultation.diagnosis}</td>
+                    <td>${consultation.prescription || "-"}</td>
+                </tr>
+            `;
         });
 
     } catch (error) {
-        console.error(error);
-
-        document.getElementById("consultation-body").innerHTML =
-            '<tr><td colspan="5">Unable to load consultation records.</td></tr>';
+        console.error("Consultation loading error:", error);
     }
 }
 
 
-// SAVE CONSULTATION
+// ==========================================
+// SIDEBAR PAGE NAVIGATION
+// ==========================================
 
-document.getElementById("consultation-form")
-    .addEventListener("submit", async function(event) {
+const navigationButtons = document.querySelectorAll(".nav-link");
+const pages = document.querySelectorAll(".page-section");
+const pageTitle = document.getElementById("page-title");
 
-        event.preventDefault();
+navigationButtons.forEach(button => {
+    button.addEventListener("click", () => {
 
-        const appointmentId = document.getElementById(
-            "consultation-appointment"
-        ).value;
+        const selectedPage = button.dataset.page;
 
-        const diagnosis = document.getElementById(
-            "consultation-diagnosis"
-        ).value.trim();
+        pages.forEach(page => {
+            page.classList.remove("active");
+        });
 
-        const prescription = document.getElementById(
-            "consultation-prescription"
-        ).value.trim();
+        navigationButtons.forEach(nav => {
+            nav.classList.remove("active");
+        });
 
-        const result = document.getElementById(
-            "consultation-result"
-        );
+        const targetPage = document.getElementById(selectedPage);
 
-        if (!appointmentId || !diagnosis) {
-
-            result.textContent =
-                "Please select an appointment and enter diagnosis.";
-
-            return;
+        if (targetPage) {
+            targetPage.classList.add("active");
         }
 
-        try {
+        button.classList.add("active");
 
-            const response = await fetch(
-                `${API}/consultations`,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        appointment_id: appointmentId,
-                        diagnosis: diagnosis,
-                        prescription: prescription
-                    })
-                }
-            );
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(
-                    data.error || "Unable to save consultation"
-                );
-            }
-
-            result.textContent =
-                "Consultation saved successfully!";
-
-            result.style.color = "green";
-
-            this.reset();
-
-            await loadConsultations();
-
-            await loadConsultationAppointments();
-
-        } catch (error) {
-
-            result.textContent = error.message;
-
-            result.style.color = "red";
+        if (pageTitle) {
+            pageTitle.textContent = button.textContent.trim();
         }
+
+        if (selectedPage === "dashboard") {
+            loadDashboard();
+        }
+
+        if (selectedPage === "patients") {
+            loadPatients();
+        }
+
+        if (selectedPage === "booking") {
+            loadPatients();
+            loadDoctors();
+        }
+
+        if (selectedPage === "queue") {
+            loadQueue();
+        }
+
+        if (selectedPage === "consultations") {
+            loadConsultationAppointments();
+            loadConsultations();
+        }
+
+        window.scrollTo(0, 0);
     });
+});
 
 
 // ==========================================
-// LOAD ALL DATA WHEN PAGE OPENS
+// INITIAL PAGE LOAD
 // ==========================================
 
-document.addEventListener("DOMContentLoaded", async () => {
-
-    await loadDashboard();
-
-    await loadPatients();
-
-    await loadDoctors();
-
-    await loadQueue();
-
-    await loadConsultationAppointments();
-
-    await loadConsultations();
-
+document.addEventListener("DOMContentLoaded", () => {
+    loadDashboard();
+    loadPatients();
+    loadDoctors();
+    loadQueue();
+    loadConsultationAppointments();
+    loadConsultations();
 });

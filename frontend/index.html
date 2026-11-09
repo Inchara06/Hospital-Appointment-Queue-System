@@ -4,271 +4,380 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hospital Appointment & Queue Management</title>
+    <title>CarePoint Hospital Management</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 
 <body>
 
-    <header>
+<div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
         <div class="logo">
-            <span>✚</span>
+            <span class="logo-icon">✚</span>
             <div>
-                <h2>CarePoint Hospital</h2>
-                <p>Appointment & Queue Management</p>
+                <h2>CarePoint</h2>
+                <p>Hospital Management</p>
             </div>
         </div>
 
-        <nav>
-            <a href="#dashboard">Dashboard</a>
-            <a href="#patients">Patients</a>
-            <a href="#booking">Appointments</a>
-            <a href="#queue">Doctor Queue</a>
+        <p class="menu-heading">MAIN MENU</p>
+
+        <nav class="sidebar-nav">
+            <button type="button" class="nav-link active" data-page="dashboard">
+                <span>▦</span> Dashboard
+            </button>
+
+            <button type="button" class="nav-link" data-page="patients">
+                <span>♙</span> Patients
+            </button>
+
+            <button type="button" class="nav-link" data-page="booking">
+                <span>▣</span> Appointments
+            </button>
+
+            <button type="button" class="nav-link" data-page="queue">
+                <span>☷</span> Doctor Queue
+            </button>
+
+            <button type="button" class="nav-link" data-page="consultations">
+                <span>✚</span> Consultations
+            </button>
         </nav>
-    </header>
 
-    <main>
-
-        <!-- DASHBOARD -->
-        <section id="dashboard">
-            <div class="welcome">
-                <div>
-                    <h1>Hospital Dashboard</h1>
-                    <p>Manage patients, appointments and doctor queues.</p>
-                </div>
-                <div id="today-date"></div>
-            </div>
-
-            <div class="stats">
-                <div class="stat-card">
-                    <h3>Total Patients</h3>
-                    <h2 id="total-patients">0</h2>
-                </div>
-
-                <div class="stat-card">
-                    <h3>Total Doctors</h3>
-                    <h2 id="total-doctors">0</h2>
-                </div>
-
-                <div class="stat-card">
-                    <h3>Total Appointments</h3>
-                    <h2 id="total-appointments">0</h2>
-                </div>
-
-                <div class="stat-card">
-                    <h3>Waiting Patients</h3>
-                    <h2 id="waiting-appointments">0</h2>
-                </div>
-            </div>
-        </section>
-
-
-        <!-- PATIENT REGISTRATION -->
-        <section id="patients" class="panel">
-            <h2>Patient Registration</h2>
-            <p>Register a new patient in the hospital.</p>
-
-            <form id="patient-form">
-                <div class="form-grid">
-
-                    <div>
-                        <label>Patient Name</label>
-                        <input type="text" id="patient-name"
-                               placeholder="Enter patient name" required>
-                    </div>
-
-                    <div>
-                        <label>Phone Number</label>
-                        <input type="tel" id="patient-phone"
-                               placeholder="Enter phone number"
-                               pattern="[0-9]{10}" required>
-                    </div>
-
-                    <div>
-                        <label>Age</label>
-                        <input type="number" id="patient-age"
-                               placeholder="Enter age" min="0" max="120">
-                    </div>
-
-                    <div>
-                        <label>Gender</label>
-                        <select id="patient-gender">
-                            <option value="">Select gender</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-
-                </div>
-
-                <button type="submit">Register Patient</button>
-            </form>
-        </section>
-
-
-        <!-- APPOINTMENT BOOKING -->
-        <section id="booking" class="panel">
-            <h2>Book an Appointment</h2>
-            <p>Schedule an appointment with a doctor.</p>
-
-            <form id="appointment-form">
-                <div class="form-grid">
-
-                    <div>
-                        <label>Select Patient</label>
-                        <select id="appointment-patient" required>
-                            <option value="">Select patient</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label>Select Doctor</label>
-                        <select id="appointment-doctor" required>
-                            <option value="">Select doctor</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label>Appointment Date</label>
-                        <input type="date" id="appointment-date" required>
-                    </div>
-
-                    <div>
-                        <label>Appointment Time</label>
-                        <input type="time" id="appointment-time" required>
-                    </div>
-
-                </div>
-
-                <button type="submit">Book Appointment</button>
-            </form>
-
-            <div id="booking-result"></div>
-        </section>
-
-
-        <!-- DOCTOR QUEUE -->
-        <section id="queue" class="panel">
-            <div class="section-heading">
-                <div>
-                    <h2>Doctor Queue</h2>
-                    <p>Today's patient waiting list.</p>
-                </div>
-
-                <button onclick="loadQueue()">Refresh Queue</button>
-            </div>
-
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Token</th>
-                            <th>Patient</th>
-                            <th>Doctor</th>
-                            <th>Department</th>
-                            <th>Time</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="queue-body">
-                        <tr>
-                            <td colspan="7">Loading queue...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-    </main>
-<!-- CONSULTATION MANAGEMENT -->
-<section class="panel" id="consultations">
-    <div class="section-heading">
-        <div>
-            <h2>Consultation Management</h2>
-            <p>Record patient diagnosis and prescription</p>
-        </div>
-    </div>
-
-    <form id="consultation-form">
-
-        <div class="form-grid">
-
-            <div class="form-group">
-                <label for="consultation-appointment">
-                    Appointment
-                </label>
-
-                <select id="consultation-appointment" required>
-                    <option value="">Select Appointment</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="consultation-diagnosis">
-                    Diagnosis
-                </label>
-
-                <input
-                    type="text"
-                    id="consultation-diagnosis"
-                    placeholder="Enter diagnosis"
-                    required
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="consultation-prescription">
-                    Prescription
-                </label>
-
-                <textarea
-                    id="consultation-prescription"
-                    placeholder="Enter prescription"
-                    rows="3"
-                ></textarea>
-            </div>
-
+        <div class="sidebar-footer">
+            <p>CarePoint Hospital</p>
+            <small>SDG 3 – Good Health</small>
         </div>
 
-        <button type="submit">
-            Save Consultation
-        </button>
+    </aside>
 
-        <p id="consultation-result"></p>
 
-    </form>
+    <!-- MAIN AREA -->
+    <div class="main-area">
 
-    <h3>Consultation Records</h3>
+        <header class="topbar">
+            <div>
+                <h2 id="page-title">Dashboard</h2>
+                <p>Hospital Appointment & Queue Management</p>
+            </div>
 
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Patient</th>
-                    <th>Doctor</th>
-                    <th>Diagnosis</th>
-                    <th>Prescription</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
+            <div class="topbar-date" id="today-date"></div>
+        </header>
 
-            <tbody id="consultation-body">
-                <tr>
-                    <td colspan="5">No consultation records yet.</td>
-                </tr>
-            </tbody>
-        </table>
+
+        <main class="content-area">
+
+            <!-- DASHBOARD PAGE -->
+            <section id="dashboard" class="page-section active">
+
+                <div class="welcome">
+                    <h1>Welcome to CarePoint</h1>
+                    <p>Manage your hospital activities from one place.</p>
+                </div>
+
+                <div class="stats">
+
+                    <div class="stat-card">
+                        <div class="stat-icon">♙</div>
+                        <h3>Total Patients</h3>
+                        <h2 id="total-patients">0</h2>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">✚</div>
+                        <h3>Total Doctors</h3>
+                        <h2 id="total-doctors">0</h2>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">▣</div>
+                        <h3>Total Appointments</h3>
+                        <h2 id="total-appointments">0</h2>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">◷</div>
+                        <h3>Waiting Patients</h3>
+                        <h2 id="waiting-appointments">0</h2>
+                    </div>
+
+                </div>
+
+                <div class="panel dashboard-info">
+                    <h2>Hospital Management</h2>
+                    <p>
+                        Use the navigation menu to register patients,
+                        book appointments, monitor doctor queues and
+                        manage consultation records.
+                    </p>
+                </div>
+
+            </section>
+
+
+            <!-- PATIENTS PAGE -->
+            <section id="patients" class="page-section">
+
+                <div class="page-heading">
+                    <h1>Patient Registration</h1>
+                    <p>Register a new patient in the hospital.</p>
+                </div>
+
+                <div class="panel">
+
+                    <h2>Patient Details</h2>
+                    <p>Enter the patient's information below.</p>
+
+                    <form id="patient-form">
+
+                        <div class="form-grid">
+
+                            <div>
+                                <label>Patient Name</label>
+                                <input type="text" id="patient-name"
+                                       placeholder="Enter patient name" required>
+                            </div>
+
+                            <div>
+                                <label>Phone Number</label>
+                                <input type="tel" id="patient-phone"
+                                       placeholder="Enter phone number"
+                                       pattern="[0-9]{10}" required>
+                            </div>
+
+                            <div>
+                                <label>Age</label>
+                                <input type="number" id="patient-age"
+                                       placeholder="Enter age" min="0" max="120">
+                            </div>
+
+                            <div>
+                                <label>Gender</label>
+                                <select id="patient-gender">
+                                    <option value="">Select gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+
+                        </div>
+
+                        <button type="submit">Register Patient</button>
+
+                    </form>
+
+                </div>
+
+            </section>
+
+
+            <!-- APPOINTMENTS PAGE -->
+            <section id="booking" class="page-section">
+
+                <div class="page-heading">
+                    <h1>Appointment Management</h1>
+                    <p>Schedule an appointment with a doctor.</p>
+                </div>
+
+                <div class="panel">
+
+                    <h2>Book an Appointment</h2>
+                    <p>Enter the appointment details.</p>
+
+                    <form id="appointment-form">
+
+                        <div class="form-grid">
+
+                            <div>
+                                <label>Select Patient</label>
+                                <select id="appointment-patient" required>
+                                    <option value="">Select patient</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label>Select Doctor</label>
+                                <select id="appointment-doctor" required>
+                                    <option value="">Select doctor</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label>Appointment Date</label>
+                                <input type="date" id="appointment-date" required>
+                            </div>
+
+                            <div>
+                                <label>Appointment Time</label>
+                                <input type="time" id="appointment-time" required>
+                            </div>
+
+                        </div>
+
+                        <button type="submit">Book Appointment</button>
+
+                    </form>
+
+                    <div id="booking-result"></div>
+
+                </div>
+
+            </section>
+
+
+            <!-- DOCTOR QUEUE PAGE -->
+            <section id="queue" class="page-section">
+
+                <div class="page-heading">
+                    <h1>Doctor Queue</h1>
+                    <p>Monitor today's patient waiting list.</p>
+                </div>
+
+                <div class="panel">
+
+                    <div class="section-heading">
+                        <div>
+                            <h2>Today's Queue</h2>
+                            <p>View tokens and update appointment status.</p>
+                        </div>
+
+                        <button type="button" onclick="loadQueue()">
+                            Refresh Queue
+                        </button>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Token</th>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Department</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="queue-body">
+                                <tr>
+                                    <td colspan="7">Loading queue...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- CONSULTATIONS PAGE -->
+            <section id="consultations" class="page-section">
+
+                <div class="page-heading">
+                    <h1>Consultation Management</h1>
+                    <p>Record patient diagnosis and prescription.</p>
+                </div>
+
+                <div class="panel">
+
+                    <h2>Record Consultation</h2>
+                    <p>Select an eligible appointment and enter details.</p>
+
+                    <form id="consultation-form">
+
+                        <div class="form-grid">
+
+                            <div class="form-group">
+                                <label for="consultation-appointment">
+                                    Appointment
+                                </label>
+
+                                <select id="consultation-appointment" required>
+                                    <option value="">Select Appointment</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="consultation-diagnosis">
+                                    Diagnosis
+                                </label>
+
+                                <input type="text"
+                                       id="consultation-diagnosis"
+                                       placeholder="Enter diagnosis"
+                                       required>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="consultation-prescription">
+                                    Prescription
+                                </label>
+
+                                <textarea id="consultation-prescription"
+                                          placeholder="Enter prescription"
+                                          rows="3"></textarea>
+                            </div>
+
+                        </div>
+
+                        <button type="submit">Save Consultation</button>
+
+                        <p id="consultation-result"></p>
+
+                    </form>
+
+                </div>
+
+
+                <div class="panel records-panel">
+
+                    <h2>Consultation Records</h2>
+                    <p>Previously saved consultation details.</p>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Diagnosis</th>
+                                    <th>Prescription</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="consultation-body">
+                                <tr>
+                                    <td colspan="5">No consultation records yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+
+        <footer>
+            <p>CarePoint Hospital | Appointment & Queue Management System</p>
+            <p>SDG 3 – Good Health and Well-being</p>
+        </footer>
+
     </div>
-</section>
-    <footer>
-        <p>CarePoint Hospital | Appointment & Queue Management System</p>
-        <p>SDG 3 – Good Health and Well-being</p>
-    </footer>
 
-    <script src="/static/script.js"></script>
+</div>
+
+<script src="/static/script.js"></script>
 
 </body>
 </html>
